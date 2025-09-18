@@ -952,6 +952,7 @@ SSH
     fi
     echo "flakeAttr: ${flakeAttr}"
     echo "flake: ${flake}"
+    echo "flake: ${flake}"
     platform_arch=$(nix --extra-experimental-features 'nix-command flakes' eval --apply 'x: toString (x.nixpkgs.hostPlatform.gcc.arch or "")' "${flake}#${flakeAttr}")
     if [[ -n ${platform_arch} ]]; then
       system_features="${system_features} gccarch-${platform_arch}"
