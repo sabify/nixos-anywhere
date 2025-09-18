@@ -952,7 +952,7 @@ SSH
     fi
     echo "flakeAttr: ${flakeAttr}"
     echo "flake: ${flake}"
-    platform_arch=$(nix --extra-experimental-features 'nix-command flakes' eval --apply 'input: let path = ["nixpkgs" "hostPlatform" "gcc" "arch"]; in if builtins.hasAttrByPath path input then builtins.getAttrFromPath path input else ""' "${flake}#${flakeAttr}")
+    platform_arch=$(nix --extra-experimental-features 'nix-command flakes' eval --apply 'x: toString (x.nixpkgs.hostPlatform.gcc.arch or "")' "${flake}#${flakeAttr}")
     if [[ -n ${platform_arch} ]]; then
       system_features="${system_features} gccarch-${platform_arch}"
     fi
