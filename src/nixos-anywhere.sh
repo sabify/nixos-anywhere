@@ -950,10 +950,14 @@ SSH
     if [[ -z ${system_features} ]]; then
       system_features=$(nix config show system-features)
     fi
-    platform_arch=$(nix --extra-experimental-features 'nix-command flakes' eval --apply 'x: (x.nixpkgs.hostPlatform.gcc.arch or "")' "${flake}#${flakeAttr}")
+    echo "flakeAttr: ${flakeAttr}"
+    echo "flake: ${flake}"
+    platform_arch=$(nix --extra-experimental-features 'nix-command flakes' eval --apply 'input: let path = ["nixpkgs" "hostPlatform" "gcc" "arch"]; in if builtins.hasAttrByPath path input then builtins.getAttrFromPath path input else ""' "${flake}#${flakeAttr}")
     if [[ -n ${platform_arch} ]]; then
       system_features="${system_features} gccarch-${platform_arch}"
     fi
+
+    echo "platform_arch: ${platform_arch}"
 
     # deduplicate the features
     system_features=$(echo "${system_features}" | tr ' ' '\n' | sort -u | tr '\n' ' ' | sed 's/ $//')
