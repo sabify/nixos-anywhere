@@ -950,7 +950,7 @@ SSH
     if [[ -z ${system_features} ]]; then
       system_features=$(nix config show system-features)
     fi
-    platform_arch=$(nix --extra-experimental-features 'nix-command flakes' eval --apply toString "(${flake}#${flakeAttr}.nixpkgs.hostPlatform.gcc.arch or \"\")")
+    platform_arch=$(nix --extra-experimental-features 'nix-command flakes' eval --apply 'x: (x.nixpkgs.hostPlatform.gcc.arch or "")' "${flake}#${flakeAttr}")
     if [[ -n ${platform_arch} ]]; then
       system_features="${system_features} gccarch-${platform_arch}"
     fi
