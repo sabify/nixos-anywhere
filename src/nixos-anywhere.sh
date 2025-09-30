@@ -1037,8 +1037,9 @@ main() {
   fi
 
   if [[ -n ${flake} ]]; then
-    system_features=$(runSshNoTty -o ConnectTimeout=10 nix --extra-experimental-features 'nix-command' config show system-features 2>/dev/null || true)
-
+    system_features=$(runSshNoTty -o ConnectTimeout=10 nix --extra-experimental-features 'nix-command' config show system-features)
+    # Escape the bash variable for safe interpolation into Nix
+    system_features="$(printf '%s' "$system_features" | sed 's/\\/\\\\/g; s/"/\\"/g')"
     # First, try to evaluate all nix settings from the flake in one go
     nixConfContent=$(nix --extra-experimental-features 'nix-command flakes' eval --raw --apply "
       config:
@@ -1054,7 +1055,7 @@ main() {
             remoteFeaturesStr = \"${system_features}\";
             # Parse remote features string (space-separated) into list
             remoteFeaturesList = if remoteFeaturesStr != \"\" then
-              builtins.filter (x: x != \"\") (builtins.split \" +\" remoteFeaturesStr)
+              builtins.filter (x: builtins.isString x && x != \"\") (builtins.split \" +\" remoteFeaturesStr)
             else [];
           in remoteFeaturesList;
 
@@ -1083,7 +1084,10 @@ main() {
     if [[ -n ${nixConfContent} ]]; then
       runSsh sh <<SSH
 mkdir -p ~/.config/nix
-echo "${nixConfContent}" >> ~/.config/nix/nix.conf
+printf '%s\n' "\$(cat <<'CONTENT'
+${nixConfContent}
+CONTENT
+)" >> ~/.config/nix/nix.conf
 SSH
     fi
   fi
